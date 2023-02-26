@@ -3,6 +3,8 @@ require 'multi_json'
 module Rulers
   module Model
     class FileModel
+      @models = {}
+
       def initialize(filename)
         @filename = filename
 
@@ -21,10 +23,29 @@ module Rulers
         @hash[name.to_s] = value
       end
 
+      def save
+        File.open("db/quotes/#{ @id }.json", "w") do |file|
+          file.write MultiJson.dump(@hash)
+        end
+      end
+
+      def self.find_by_submitter(name)
+        self.find_all.find do |model|
+          model[:submitter] == name
+        end
+      end
+
       def self.find(id)
         begin
-          FileModel.new("db/quotes/#{id}.json")
-        rescue
+          if @models.keys.include? id
+            @models[id]
+          else
+            FileModel.new("db/quotes/#{id}.json").tap do |model|
+              @models[id] = model
+            end
+          end
+        rescue => e
+          puts e.inspect
           return nil
         end
       end
@@ -40,9 +61,14 @@ module Rulers
       def self.create(attributes = {})
         model_filenames = Dir.glob("db/quotes/*.json")
 
-        File.open("db/quotes/#{ model_filenames.length + 1 }.json", "w") do |file|
+        ids = model_filenames.map { |n| File.split(n)[-1].to_i }
+        new_id = ids.max + 1
+
+        File.open("db/quotes/#{ new_id }.json", "w") do |file|
           file.write MultiJson.dump(attributes)
         end
+
+        self.find(new_id)
       end
     end
   end

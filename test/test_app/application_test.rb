@@ -1,12 +1,34 @@
 require_relative "../test_helper"
 require_relative "config/test_app"
 require_relative "app/controllers/test_controller"
+require "multi_json"
 
 class ApplicationTest < Minitest::Test
   include Rack::Test::Methods
 
   def app
     TestApp.new(root_controller: TestController)
+  end
+
+  def setup
+    [
+      {"quote":"quote 1","attribution":"attribution 1"},
+      {"quote":"quote 2","attribution":"attribution 2"}
+    ].each.with_index(1) do |quote, index|
+      write_quote_file(quote, index)
+    end
+  end
+
+  def write_quote_file(quote, index)
+    File.open("../app/db/quotes/#{index}.json", "w") do |f|
+      f.write MultiJson.dump(quote)
+    end
+  end
+
+  def teardown
+    Dir.glob("../app/db/quotes/*.json").each do |f|
+      File.delete f
+    end
   end
 
   def test_root_controller_and_view
@@ -38,6 +60,12 @@ class ApplicationTest < Minitest::Test
     </ol>
     TEMPLATE
 
-    assert_match /#{expected_template}/, last_response.body
+    assert_match Regexp.new(expected_template), last_response.body
+  end
+
+  def test_quote_update
+    post "/quotes/update", "quote" => 'quote_1'
+
+    assert last_response.ok?
   end
 end

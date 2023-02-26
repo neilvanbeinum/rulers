@@ -29,6 +29,7 @@ module Rulers
 
           [200, {'Content-Type' => 'text/html'}, [text || ""]]
         rescue StandardError => e
+          puts e.message
           [500, { 'Content-Type' => 'text/html' }, [e.message]]
         end
       end
