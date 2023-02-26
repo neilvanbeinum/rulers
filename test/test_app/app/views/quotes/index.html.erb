@@ -1,0 +1,8 @@
+<ol>
+<% @quotes.each do |quote| %>
+  <li>
+    <p>Quote: <%= quote[:quote] %></p>
+    <p>Attribution: <%= quote[:attribution] %></p>
+  </li>
+<% end %>
+</ol>
