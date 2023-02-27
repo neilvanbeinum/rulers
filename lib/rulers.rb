@@ -27,7 +27,9 @@ module Rulers
         begin
           text = controller.send(act || :index)
 
-          [200, {'Content-Type' => 'text/html'}, [text || ""]]
+          response = Rack::Response.new((text || ""), 200, {'Content-Type' => 'text/html'})
+
+          [response.status, response.headers, response.body]
         rescue StandardError => e
           puts e.message
           [500, { 'Content-Type' => 'text/html' }, [e.message]]

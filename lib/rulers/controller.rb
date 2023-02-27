@@ -13,6 +13,14 @@ module Rulers
       @env = env
     end
 
+    def request
+      @_request ||= Rack::Request.new(env)
+    end
+
+    def params
+      request.params
+    end
+
     def view_directory
       Rulers.to_underscore(self.class.to_s.delete_suffix("Controller"))
     end

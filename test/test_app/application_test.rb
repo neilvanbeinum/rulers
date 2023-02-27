@@ -19,14 +19,18 @@ class ApplicationTest < Minitest::Test
     end
   end
 
+  def dirname
+    dirname ||= File.expand_path("../app/db/quotes", __FILE__)
+  end
+
   def write_quote_file(quote, index)
-    File.open("../app/db/quotes/#{index}.json", "w") do |f|
+    File.open(File.join(dirname, "#{index}.json"), "w") do |f|
       f.write MultiJson.dump(quote)
     end
   end
 
   def teardown
-    Dir.glob("../app/db/quotes/*.json").each do |f|
+    Dir.glob(File.join(dirname, "*.json")).each do |f|
       File.delete f
     end
   end
@@ -61,6 +65,13 @@ class ApplicationTest < Minitest::Test
     TEMPLATE
 
     assert_match Regexp.new(expected_template), last_response.body
+  end
+
+  def test_model_show
+    get "/quotes/show?id=2"
+
+    assert last_response.body.include? "<p>Quote: quote 2</p>"
+    assert last_response.body.include? "<p>Attribution: attribution 2</p>"
   end
 
   def test_quote_update

@@ -5,6 +5,12 @@ class QuotesController < Rulers::Controller
     render :index
   end
 
+  def show
+    @quote = FileModel.find(params["id"])
+
+    render :show
+  end
+
   def update
     raise "cannot update unless using POST" unless env['REQUEST_METHOD'] == 'POST'
 
